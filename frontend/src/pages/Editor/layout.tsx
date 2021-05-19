@@ -35,7 +35,7 @@ const Hook = <T extends {}>(C:React.JSXElementConstructor<T>, f:Function) => {
 
 
 const EContent = Hook(Editor, (t:any)=>{
-  fetch("www.baidu.com").then(res => res.text()).then(txt=>t.setState({content:txt}))
+  fetch("/api/v1/raw/Rust/%E5%9C%A3%E7%BB%8F%E3%80%8ARust%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E8%AF%AD%E8%A8%80%E3%80%8B/%E7%AC%AC%E5%85%AB%E7%AB%A0.md").then(res => res.text()).then(txt=>t.setState({content:txt}))
 })
 
 
