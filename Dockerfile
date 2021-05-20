@@ -25,4 +25,4 @@ COPY ./frontend/build /app/frontend
 
 WORKDIR /app
 
-CMD ["./github-markdown-notebook"]
+ENTRYPOINT ["${APP_ENV}", "./github-markdown-notebook"]
