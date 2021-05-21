@@ -1,5 +1,6 @@
-use actix_web::{client::{Client, Connector}, get, web, App, HttpResponse, HttpServer, Responder, http::StatusCode};
+use actix_web::{client::{Client, Connector}, get, web, App, http, HttpResponse, HttpServer, Responder, http::StatusCode};
 use actix_files as fs;
+use actix_cors::Cors;
 use std::{env, sync::Mutex};
 use openssl::ssl::{SslConnector, SslMethod};
 use serde_json::{json, value::Value::{self, Array, Object}, Map};
@@ -156,7 +157,11 @@ async fn main() -> std::io::Result<()> {
         let builder = SslConnector::builder(SslMethod::tls()).unwrap();
         let client = Client::builder().connector(Connector::new().ssl(builder.build()).finish()).finish();
         let data = web::Data::new(Mutex::new(Context{http_client: client, private_token: private_token, repository: repository}));
+
+        let cors = Cors::default().allow_any_origin().allow_any_method().allow_any_header();
+
         App::new()
+            .wrap(cors)
             .app_data(data.clone())
             .service(git_tree)
             .service(tree)

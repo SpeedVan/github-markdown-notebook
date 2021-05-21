@@ -6,38 +6,31 @@ import { UserOutlined, LaptopOutlined, NotificationOutlined } from '@ant-design/
 
 import { Layout, Menu, Breadcrumb } from 'antd';
 import Editor from './editor'
+
+import data from './../../components/Data'
+import { Hook } from '../../common'
+import { time } from 'console';
 const { Header, Footer, Sider, Content } = Layout;
 const { SubMenu } = Menu;
 
-// let data:{[key:string]:any}= {}
-
-// setInterval(()=>{
-//   console.log(data["a"])
-//   data["a"]({})
-// }, 5000)
-
-const Hook = <T extends {}>(C:React.JSXElementConstructor<T>, f:Function) => {
-  class tCom extends React.Component<T> {
-    constructor(props:T) {
-      super(props)
-    }
-    componentDidMount() {
-      f(this)
-    }
-    render(){
-      console.log("渲染一次")
-      return <C {...{...this.props, ...this.state}} />
-    }
-  }
-
-  return tCom
-}
-
-
-const EContent = Hook(Editor, (t:any)=>{
-  fetch("/api/v1/raw/Rust/%E5%9C%A3%E7%BB%8F%E3%80%8ARust%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E8%AF%AD%E8%A8%80%E3%80%8B/%E7%AC%AC%E5%85%AB%E7%AB%A0.md").then(res => res.text()).then(txt=>t.setState({content:txt}))
+const Editor_ = Hook(Editor, (t: any) => {
+  fetch("/api/v1/raw/Rust/%E5%9C%A3%E7%BB%8F%E3%80%8ARust%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E8%AF%AD%E8%A8%80%E3%80%8B/%E7%AC%AC%E5%85%AB%E7%AB%A0.md")
+    .then(res => res.text())
+    .then(txt => t.setState({ content: txt }))
 })
 
+const Menu_ = Hook(Menu, (t: any) =>{
+  fetch("http://172.22.21.136:8080/api/v1/tree/", { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
+  .then(res => res.json())
+  .then(j => t.setState({ data: j, children:[j.map((item:any)=>item.type == "dir"?<SubMenu_ key={item.path} title={item.name}/>:<Menu.Item key={item.path}>{item.name}</Menu.Item>)] }))
+})
+const SubMenu_ = Hook(SubMenu, (t: any) =>{
+  console.log(t)
+  const P = t.props
+  t.dp.onTitleClick=() => fetch("http://172.22.21.136:8080/api/v1/tree/"+P.eventKey, { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
+  .then(res => res.json())
+  .then(j => t.setState({ data: j, children:[j.map((item:any)=>item.type == "dir"?<SubMenu_ key={item.path} title={item.name}/>:<Menu.Item key={item.path}>{item.name}</Menu.Item>)] }))
+})
 
 const EditorLayout = () => (
   <Layout className="editor">
@@ -57,7 +50,7 @@ const EditorLayout = () => (
     <Content className="content" style={{ padding: '0 50px' }}>
       <Layout className="layout" style={{ padding: '24px 0' }}>
         <Sider className="sider" width={200}>
-          <Menu
+          <Menu_
             mode="inline"
             defaultSelectedKeys={['1']}
             defaultOpenKeys={['sub1']}
@@ -81,9 +74,9 @@ const EditorLayout = () => (
               <Menu.Item key="11">option11</Menu.Item>
               <Menu.Item key="12">option12</Menu.Item>
             </SubMenu>
-          </Menu>
+          </Menu_>
         </Sider>
-        <Content className="content" style={{ padding: '0 24px', minHeight: 280 }}><EContent content=""/></Content>
+        <Content className="content" style={{ padding: '0 24px', minHeight: 280 }}><Editor content="" /></Content>
       </Layout>
     </Content>
     <Footer style={{ textAlign: 'center' }}>Ant Design ©2018 Created by Ant UED</Footer>
