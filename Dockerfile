@@ -21,8 +21,9 @@ RUN apt-get update \
 EXPOSE 8080
 
 COPY --from=builder /app/github-markdown-notebook/target/release/github-markdown-notebook /app/github-markdown-notebook
-COPY ./frontend/build /app/frontend
-
+COPY ./static /app/static
+COPY ./start_withenv.sh /app/start_withenv.sh
+RUN chmod 777 /app/start_withenv.sh
 WORKDIR /app
 
-ENTRYPOINT ["${APP_ENV}", "./github-markdown-notebook"]
+ENTRYPOINT [ "./github-markdown-notebook"]

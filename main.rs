@@ -2,6 +2,7 @@ use actix_web::{client::{Client, Connector}, get, web, App, http, HttpResponse, 
 use actix_files as fs;
 use actix_cors::Cors;
 use std::{env, sync::Mutex};
+use std::time::Duration;
 use openssl::ssl::{SslConnector, SslMethod};
 use serde_json::{json, value::Value::{self, Array, Object}, Map};
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
@@ -20,7 +21,7 @@ async fn tree(path_params: web::Path<String>, data: web::Data<Mutex<Context>>) -
     let token = format!("token {}", ctx.private_token);
     println!("url: {}", url);
     println!("token: {}", token);
-    let response = ctx.http_client.get(url)
+    let response = ctx.http_client.get(url).timeout(Duration::from_secs(30))
       .header("Authorization", token)
       .header("Accept", "application/vnd.github.v3+json")
       .header("User-Agent", "request")
@@ -35,7 +36,10 @@ async fn tree(path_params: web::Path<String>, data: web::Data<Mutex<Context>>) -
                         let name = item.get("name").unwrap().as_str().unwrap().to_string();
                         json!({
                             "name": name,
-                            "path": format!("{}/{}", path_params, name),
+                            "path": match path_params.as_str() {
+                                "" => name,
+                                _ =>format!("{}/{}", path_params, name)
+                            },
                             "type": item.get("type").unwrap().as_str().unwrap().to_string(),
                         })
                     }).collect::<Vec<Value>>()), // 不to_string()的话，&str无论怎么复制都是地址，该回收的话，还是live not enough
@@ -65,7 +69,7 @@ async fn git_tree(path_params: web::Path<String>, data: web::Data<Mutex<Context>
     let token = format!("token {}", ctx.private_token);
     println!("url: {}", url);
     println!("token: {}", token);
-    let response = ctx.http_client.get(url)
+    let response = ctx.http_client.get(url).timeout(Duration::from_secs(30))
       .header("Authorization", token)
       .header("Accept", "application/vnd.github.v3+json")
       .header("User-Agent", "request")
@@ -133,7 +137,7 @@ async fn raw(path_params: web::Path<String>, data: web::Data<Mutex<Context>>) ->
     let token = format!("token {}", ctx.private_token);
     println!("url: {}", url);
     println!("token: {}", token);
-    let response = ctx.http_client.get(url)
+    let response = ctx.http_client.get(url).timeout(Duration::from_secs(30))
       .header("Authorization", token)
     //   .header("Accept", "application/vnd.github.v3+json")
       .header("User-Agent", "request")
