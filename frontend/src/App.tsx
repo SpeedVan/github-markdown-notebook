@@ -1,9 +1,8 @@
 import React from 'react';
-import 'antd/dist/antd.css';
 import { Switch, Route, HashRouter as Router } from 'react-router-dom';
 
 import Welcome from './pages/Welcome'
-import Editor from './pages/Editor'
+import Editor from './pages/Main'
 
 
 const App: React.FC = () => (

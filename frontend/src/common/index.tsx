@@ -1,4 +1,4 @@
-import React, {JSXElementConstructor} from 'react';
+import React, {JSXElementConstructor, InputHTMLAttributes, ClassAttributes, PropsWithChildren, FunctionComponent, Attributes} from 'react';
 
 const HookMounted = <P extends {}, S extends {}>(C: JSXElementConstructor<P>|React.ComponentType<P>, f: Function) => {
   if (C instanceof React.Component) { 
@@ -30,18 +30,19 @@ const HookMounted = <P extends {}, S extends {}>(C: JSXElementConstructor<P>|Rea
   }
 }
 
-const HookProps = <P extends {}, S extends {}>(C: JSXElementConstructor<P>|React.ComponentType<P>, exPropsFuncMap:{[key in keyof P]:(t:React.Component<P, S>)=>P[key]} ) => {
-  class tCom extends React.PureComponent<P, S> {
-      render() {
-        let exProps:{[key in keyof P]:P[key]} = {} as {[key in keyof P]:P[key]} 
-        for (let key in exPropsFuncMap) {
-          exProps[key] = exPropsFuncMap[key](this)
-        }
-        // console.log(C,"渲染一次", this.props, exProps, this.state)
-        return <C {...{ ...this.props, ...exProps, ...this.state }} />
-      }
-  }
-  return tCom
+const HookProps = <P extends {}>(C: FunctionComponent<P>, exP:P ) => {
+  // class tCom extends React.PureComponent<P, S> {
+  //     render() {
+  //       let exProps:{[key in keyof P]:P[key]} = {} as {[key in keyof P]:P[key]} 
+  //       for (let key in exPropsFuncMap) {
+  //         exProps[key] = exPropsFuncMap[key](this)
+  //       }
+  //       console.log(this.props,"渲染一次")
+  //       return <C {...{ ...this.props, ...exProps, ...this.state }} />
+  //     }
+  // }
+  
+  return (p:PropsWithChildren<P>) => <C {...{...p, ...exP}} />
 }
 
 export { HookMounted, HookProps }

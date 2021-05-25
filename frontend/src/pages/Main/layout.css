@@ -12,7 +12,7 @@ margin: 16px 0 16px 24px;
 } */
 
 .editor {
-    height: 100%;
+    min-height:100%
 }
 
 .editor .header {
