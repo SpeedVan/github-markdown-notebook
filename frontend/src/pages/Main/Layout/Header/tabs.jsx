@@ -128,7 +128,7 @@ const TabsBuild = (tabsConfig) => {
           {
             tabsConfig.map((item, index)=>
               <TabPanel value={value} label={item.label} index={index} dir={theme.direction} >
-                {index}
+                {item.component}
               </TabPanel>
             )
           }

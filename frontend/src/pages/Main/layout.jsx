@@ -68,8 +68,9 @@ import Typography from '@material-ui/core/Typography';
 
 import TabsBuild from './Layout/Header/tabs'
 import DrawerBuild from './Layout/Drawer/drawer'
+import SubPage from './subpages/notebook'
 
-const tabs = TabsBuild([{label:"Notebook"},{label:"Tools"}]);
+const tabs = TabsBuild([{label:"Notebook", component:<SubPage />},{label:"Tools"}]);
 
 const drawer = DrawerBuild("left");
 
@@ -142,7 +143,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function FullWidthTabs() {
+export default function MainLayout() {
   const classes = useStyles();
   // const theme = useTheme();
   // const [value, setValue] = React.useState(0);
