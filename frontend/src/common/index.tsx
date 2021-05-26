@@ -1,5 +1,7 @@
 import React, {JSXElementConstructor, InputHTMLAttributes, ClassAttributes, PropsWithChildren, FunctionComponent, Attributes} from 'react';
 
+import {stylesWrapper} from './styles'
+
 const HookMounted = <P extends {}, S extends {}>(C: JSXElementConstructor<P>|React.ComponentType<P>, f: Function) => {
   if (C instanceof React.Component) { 
     const tmpf = C.componentDidMount 
@@ -45,4 +47,5 @@ const HookProps = <P extends {}>(C: FunctionComponent<P>, exP:P ) => {
   return (p:PropsWithChildren<P>) => <C {...{...p, ...exP}} />
 }
 
-export { HookMounted, HookProps }
+
+export { HookMounted, HookProps, stylesWrapper }
