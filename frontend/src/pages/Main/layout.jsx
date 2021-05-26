@@ -68,9 +68,9 @@ import Typography from '@material-ui/core/Typography';
 
 import TabsBuild from './Layout/Header/tabs'
 import DrawerBuild from './Layout/Drawer/drawer'
-import SubPage from './subpages/notebook'
+import NotebookSubPage from './subpages/notebook'
 
-const tabs = TabsBuild([{label:"Notebook", component:<SubPage />},{label:"Tools"}]);
+const tabs = TabsBuild([{label:"Notebook", component:<NotebookSubPage />},{label:"Tools"}]);
 
 const drawer = DrawerBuild("left");
 

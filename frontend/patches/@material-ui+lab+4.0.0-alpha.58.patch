@@ -1,0 +1,13 @@
+diff --git a/node_modules/@material-ui/lab/esm/TreeItem/TreeItem.js b/node_modules/@material-ui/lab/esm/TreeItem/TreeItem.js
+index acf920c..f544106 100644
+--- a/node_modules/@material-ui/lab/esm/TreeItem/TreeItem.js
++++ b/node_modules/@material-ui/lab/esm/TreeItem/TreeItem.js
+@@ -140,7 +140,7 @@ var TreeItem = /*#__PURE__*/React.forwardRef(function TreeItem(props, ref) {
+   var handleRef = useForkRef(nodeRef, ref);
+   var icon = iconProp;
+   var expandable = Boolean(Array.isArray(children) ? children.length : children);
+-  var expanded = isExpanded ? isExpanded(nodeId) : false;
++  var expanded = other.expanded?other.expanded:isExpanded ? isExpanded(nodeId) : false;
+   var focused = isFocused ? isFocused(nodeId) : false;
+   var tabbable = isTabbable ? isTabbable(nodeId) : false;
+   var selected = isSelected ? isSelected(nodeId) : false;

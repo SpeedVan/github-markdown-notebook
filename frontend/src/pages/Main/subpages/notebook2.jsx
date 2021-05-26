@@ -5,7 +5,7 @@ import TreeView from '@material-ui/lab/TreeView';
 import TreeViewContext from '@material-ui/lab/TreeView/TreeViewContext';
 import TreeItem from '@material-ui/lab/TreeItem';
 import Typography from '@material-ui/core/Typography';
-import {Book as BookIcon, BookOutlined as BookOutlinedIcon} from '@material-ui/icons';
+import {Mail as MailIcon, BookOutlined as BookOutlinedIcon} from '@material-ui/icons';
 import { Book as mBookIcon, BookOutline as mBookOutlineIcon, BookPlus as mBookPlusIcon, BookMinus as mBookMinusIcon } from 'mdi-material-ui'
 import DeleteIcon from '@material-ui/icons/Delete';
 import Label from '@material-ui/icons/Label';
@@ -17,7 +17,6 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 
 import {stylesWrapper} from '../../../common'
-import {StatefulEditor} from './editor'
 
 const useTreeItemStyles = makeStyles((theme) => ({
   root: {
@@ -32,7 +31,6 @@ const useTreeItemStyles = makeStyles((theme) => ({
     '&:focus > $content $label, &:hover > $content $label, &$selected > $content $label': {
       backgroundColor: 'transparent',
     },
-    // minHeight: '100%',
   },
   content: {
     color: theme.palette.text.secondary,
@@ -119,9 +117,7 @@ class StateItem extends React.Component {
     console.log("StateItem shouldComponentUpdate", nextState, nextContext)
     return nextState != null
   }
-  dirOnClick(e) {
-    e.preventDefault()
-    e.stopPropagation()
+  onClick(e) {
     if (!this.state.expanded) {
       if (!this.state.loaded) {
         fetch("http://106.75.181.203:8081/api/v1/tree/"+this.props.nodeId, { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
@@ -129,7 +125,7 @@ class StateItem extends React.Component {
           .then(j => {
             // const state = this.store.getState()
 
-            this.setState({children:[j.map((item)=><StateItem nodeId={item.path} labelText={item.name} type={item.type} fileCallback={this.props.fileCallback} />)], expanded: true, loaded: true})
+            this.setState({children:[j.map((item)=><StateItem nodeId={item.path} labelText={item.name} type={item.type} />)], expanded: true, loaded: true})
             // this.store.setState({...state, openKeys:state.openKeys.concat([e.key])})
           })
       } else {
@@ -139,25 +135,12 @@ class StateItem extends React.Component {
       this.setState({expanded: false})
     }
   }
-  fileOnClick(e) {
-    e.preventDefault()
-    e.stopPropagation()
-    fetch("http://106.75.181.203:8081/api/v1/raw/"+this.props.nodeId, { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
-          .then(res => res.text())
-          .then(t => {
-            // const state = this.store.getState()
-
-            this.props.fileCallback(t)
-            // this.store.setState({...state, openKeys:state.openKeys.concat([e.key])})
-          })
-  }
   render() {
     console.log("StateItem", this.props.nodeId, "render")
     const exProps = this.props.type == "dir" ? {
-      onLabelClick:this.dirOnClick.bind(this),
+      onLabelClick:this.onClick.bind(this),
       labelIcon:this.state.expanded?mBookMinusIcon:mBookPlusIcon
     }: {
-      onLabelClick:this.fileOnClick.bind(this),
       labelIcon:mBookOutlineIcon
     }
 
@@ -184,28 +167,26 @@ const useStyles = makeStyles({
 class Notebook extends React.Component {
   constructor(props) {
     super(props)
-    
     this.state = {
       open: false,
       children: [],
-      expanded: false,
-      editor: StatefulEditor(),
+      expanded: false
     }
   }
   shouldComponentUpdate(nextProps, nextState, nextContext) {
     console.log("Notebook shouldComponentUpdate", nextState != null)
     return nextState != null
   }
-  componentDidMount() {
-    fetch("http://106.75.181.203:8081/api/v1/tree/", { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
-      .then(res => res.json())
-      .then(j => {
-        // const state = this.store.getState()
-        console.log("查了根一遍")
-        this.setState({children:[j.map((item)=><StateItem nodeId={item.path} labelText={item.name} type={item.type} fileCallback={content=>this.state.editor.obj.content=content}/>)]})
-        // this.store.setState({...state, openKeys:state.openKeys.concat([e.key])})
-      })
-  }
+//   componentDidMount() {
+//     fetch("http://106.75.181.203:8081/api/v1/tree/", { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
+//       .then(res => res.json())
+//       .then(j => {
+//         // const state = this.store.getState()
+//         console.log("查了根一遍")
+//         this.setState({children:[j.map((item)=><StateItem nodeId={item.path} labelText={item.name} type={item.type} />)]})
+//         // this.store.setState({...state, openKeys:state.openKeys.concat([e.key])})
+//       })
+//   }
   render() {
     console.log("Notebook render")
     const { classes } = this.props
@@ -218,9 +199,45 @@ class Notebook extends React.Component {
           defaultExpandIcon={<ArrowRightIcon />}
           defaultEndIcon={<div style={{ width: 24 }} />}
         >
-          {this.state.children}
+          {/* {this.state.children} */}
+          <StyledTreeItem nodeId="1" labelText="All Mail" labelIcon={MailIcon} />
+          <StyledTreeItem nodeId="2" labelText="Trash" labelIcon={DeleteIcon} />
+          <StyledTreeItem nodeId="3" labelText="Categories" labelIcon={Label}>
+            <StyledTreeItem
+              nodeId="5"
+              labelText="Social"
+              labelIcon={SupervisorAccountIcon}
+              labelInfo="90"
+              color="#1a73e8"
+              bgColor="#e8f0fe"
+            />
+            <StyledTreeItem
+              nodeId="6"
+              labelText="Updates"
+              labelIcon={InfoIcon}
+              labelInfo="2,294"
+              color="#e3742f"
+              bgColor="#fcefe3"
+            />
+            <StyledTreeItem
+              nodeId="7"
+              labelText="Forums"
+              labelIcon={ForumIcon}
+              labelInfo="3,566"
+              color="#a250f5"
+              bgColor="#f3e8fd"
+            />
+            <StyledTreeItem
+              nodeId="8"
+              labelText="Promotions"
+              labelIcon={LocalOfferIcon}
+              labelInfo="733"
+              color="#3c8039"
+              bgColor="#e6f4ea"
+            />
+          </StyledTreeItem>
+          <StyledTreeItem nodeId="4" labelText="History" labelIcon={Label} />
         </TreeView>
-        {this.state.editor.element}
       </div>
     )
   }
