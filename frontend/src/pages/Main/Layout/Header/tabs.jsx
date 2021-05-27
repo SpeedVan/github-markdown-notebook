@@ -9,6 +9,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
 import SwipeableViews from 'react-swipeable-views';
+import { withRouter } from "react-router-dom";
 
 // import { fade, makeStyles, useTheme } from '@material-ui/core/styles';
 
@@ -66,7 +67,7 @@ const SubscribeObject = (obj) => {
   return newObj
 }
 
-const TabsBuild = (tabsConfig) => {
+const TabsBuild = ({pathPrefix, items}) => {
   const obj = SubscribeObject({value:0})
   class TabsBar extends React.Component {
     constructor(props) {
@@ -81,18 +82,23 @@ const TabsBuild = (tabsConfig) => {
     shouldComponentUpdate(nextProps, nextState, nextContext) {
       return nextState != null
     }
+    handleCallToRouter = (e,value) => {
+      this.props.history.push(value);
+    }
     render() {
       return (
         <Tabs
-          value={this.state.value}
-          onChange={(e,v)=>obj.value=v}
+          value={this.props.history.location.pathname}
+          onChange={this.handleCallToRouter}
+          // value={this.state.value}
+          // onChange={(e,v)=>obj.value=v}
           indicatorColor="primary"
           textColor="primary"
           // variant="fullWidth"
           aria-label="full width tabs example"
         >
           {
-            tabsConfig.map((item, index)=><Tab label={item.label} {...a11yProps(index)} />)
+            items.map((item, index)=><Tab label={item.label} value={pathPrefix+"/"+item.label} {...a11yProps(index)} />)
           }
         </Tabs>
       )
@@ -122,12 +128,12 @@ const TabsBuild = (tabsConfig) => {
       return (
         <SwipeableViews
           axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-          index={value}
+          index={this.props.history.location.pathname}
           // onChangeIndex={handleChangeIndex}
         >
           {
-            tabsConfig.map((item, index)=>
-              <TabPanel value={value} label={item.label} index={index} dir={theme.direction} >
+            items.map((item, index)=>
+              <TabPanel value={pathPrefix+"/"+item.label} label={item.label} index={this.props.history.location.pathname} dir={theme.direction} >
                 {item.component}
               </TabPanel>
             )
@@ -136,9 +142,11 @@ const TabsBuild = (tabsConfig) => {
       )
     }
   }
+  const TabsBarWithRouter = withRouter(TabsBar)
+  const TabsContentWithRouter = withRouter(TabsContent)
   return {
-    bar:<TabsBar />,
-    content:<TabsContent />,
+    bar:<TabsBarWithRouter />,
+    content:<TabsContentWithRouter />,
     obj: obj
   }
 }

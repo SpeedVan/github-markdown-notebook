@@ -13,6 +13,9 @@ import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
 import InfoIcon from '@material-ui/icons/Info';
 import ForumIcon from '@material-ui/icons/Forum';
 import LocalOfferIcon from '@material-ui/icons/LocalOffer';
+import Grid from "@material-ui/core/Grid";
+import Paper from '@material-ui/core/Paper';
+import Container from '@material-ui/core/Container';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 
@@ -32,7 +35,12 @@ const useTreeItemStyles = makeStyles((theme) => ({
     '&:focus > $content $label, &:hover > $content $label, &$selected > $content $label': {
       backgroundColor: 'transparent',
     },
-    // minHeight: '100%',
+  },
+  view: {
+
+  },
+  item: {
+    paddingLeft: theme.spacing(2),
   },
   content: {
     color: theme.palette.text.secondary,
@@ -173,13 +181,6 @@ StyledTreeItem.propTypes = {
   labelText: PropTypes.string.isRequired,
 };
 
-const useStyles = makeStyles({
-  root: {
-    height: 264,
-    flexGrow: 1,
-    maxWidth: 400,
-  },
-});
 
 class Notebook extends React.Component {
   constructor(props) {
@@ -211,23 +212,55 @@ class Notebook extends React.Component {
     const { classes } = this.props
     return  (  
       <div className={classes.root}>
-        <TreeView
-          className={classes.root}
-          // defaultExpanded={['3']}
-          defaultCollapseIcon={<ArrowDropDownIcon />}
-          defaultExpandIcon={<ArrowRightIcon />}
-          defaultEndIcon={<div style={{ width: 24 }} />}
-        >
-          {this.state.children}
-        </TreeView>
-        {this.state.editor.element}
+        
+        <Grid className={classes.root} container layout={"row"} spacing={8}>
+          <React.Fragment>
+            <Grid item xs={24}>
+              <Paper className={classes.treeViewPaper}>
+                <TreeView
+                  className={classes.treeViewRoot}
+                  // defaultExpanded={['3']}
+                  defaultCollapseIcon={<ArrowDropDownIcon />}
+                  defaultExpandIcon={<ArrowRightIcon />}
+                  defaultEndIcon={<div style={{ width: 24 }} />}
+                >
+                  {this.state.children}
+                </TreeView>
+              </Paper>
+            </Grid>
+            <Container>
+              <Paper className={classes.contentPaper}>
+                {this.state.editor.element}
+              </Paper>
+            </Container>
+          </React.Fragment>
+        </Grid>
+        
+        
       </div>
     )
   }
 }
 
+export default stylesWrapper(Notebook, makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+    minHeight: '100%',
+  },
+  treeViewPaper: {
+    flexGrow: 1,
+    width: 300,
+    padding: theme.spacing(1),
+    // textAlign: 'center',
+    color: theme.palette.text.secondary,
+    minHeight: '100%',
+  },
+  contentPaper: {
+    padding: theme.spacing(1),
+    minHeight: '100%',
+  }
+})))
 
 
-export default stylesWrapper(Notebook, useStyles)
 
 

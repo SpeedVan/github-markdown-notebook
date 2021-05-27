@@ -10,7 +10,7 @@ const Welcome = () => {
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
-        <Link className="Welcome-link" to="/editor" rel="noopener noreferrer">Enter</Link>
+        <Link className="Welcome-link" to="/main" rel="noopener noreferrer">Enter</Link>
       </header>
     </div>
   );

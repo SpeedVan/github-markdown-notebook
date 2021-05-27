@@ -68,9 +68,12 @@ import Typography from '@material-ui/core/Typography';
 
 import TabsBuild from './Layout/Header/tabs'
 import DrawerBuild from './Layout/Drawer/drawer'
-import NotebookSubPage from './subpages/notebook'
+import NotebookSubpage from './subpages/notebook'
 
-const tabs = TabsBuild([{label:"Notebook", component:<NotebookSubPage />},{label:"Tools"}]);
+const tabs = TabsBuild({
+  pathPrefix: '/main',
+  items:[{label:"notebook", component:<NotebookSubpage />},{label:"tools"}]
+});
 
 const drawer = DrawerBuild("left");
 
@@ -79,6 +82,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     backgroundColor: theme.palette.background.paper,
     width: '100%',
+    height: '100%',
   },
   grow: {
     flexGrow: 1,
