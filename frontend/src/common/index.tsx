@@ -1,6 +1,7 @@
 import React, {JSXElementConstructor, InputHTMLAttributes, ClassAttributes, PropsWithChildren, FunctionComponent, Attributes} from 'react';
 
 import {stylesWrapper} from './styles'
+import {statefulWrapper} from './state'
 
 const HookMounted = <P extends {}, S extends {}>(C: JSXElementConstructor<P>|React.ComponentType<P>, f: Function) => {
   if (C instanceof React.Component) { 
@@ -48,4 +49,4 @@ const HookProps = <P extends {}>(C: FunctionComponent<P>, exP:P ) => {
 }
 
 
-export { HookMounted, HookProps, stylesWrapper }
+export { HookMounted, HookProps, stylesWrapper, statefulWrapper }
