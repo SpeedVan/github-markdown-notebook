@@ -11,10 +11,10 @@ import Tab from '@material-ui/core/Tab';
 import SwipeableViews from 'react-swipeable-views';
 import { withRouter } from "react-router-dom";
 
-// import { fade, makeStyles, useTheme } from '@material-ui/core/styles';
+import { statefulWrapper, stylesWrapper } from '../../../../common'
+import { makeStyles } from '@material-ui/core/styles';
 
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
+const TabPanel = ({ children, value, index, classes, ...other }) => {
 
   return (
     <div
@@ -22,22 +22,17 @@ function TabPanel(props) {
       hidden={value !== index}
       id={`full-width-tabpanel-${index}`}
       aria-labelledby={`full-width-tab-${index}`}
+      className = {classes.tabpanel}
       {...other}
     >
       {value === index && (
-        <Box p={3}>
-          <Typography>{children}</Typography>
+        <Box className = {classes.tabpanel}>
+          <Typography className = {classes.tabpanel}>{children}</Typography>
         </Box>
       )}
     </div>
   );
 }
-
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.any.isRequired,
-  value: PropTypes.any.isRequired,
-};
 
 function a11yProps(index) {
   return {
@@ -47,109 +42,63 @@ function a11yProps(index) {
 }
 
 
-const SubscribeObject = (obj) => {
-  const newObj = {
-    __obj: obj,
-    __subfuncs: {}
-  }
-  for (let key in obj) {
-    newObj.__defineGetter__(key, function(){
-      return this.__obj[key]
-    });
-    newObj.__defineSetter__(key, function(x){
-      this.__obj[key] = x
-      this.__subfuncs[key].forEach(f=>f(x))
-    });
+export const StatefulTabsBar = statefulWrapper(withRouter(props=>
+  <Tabs
+    value={props.history.location.pathname}
+    onChange={(e,v)=>props.history.push(v)}
+    // value={this.state.value}
+    // onChange={(e,v)=>obj.value=v}
+    indicatorColor="primary"
+    textColor="primary"
+    // variant="fullWidth"
+    aria-label="full width tabs example"
+  >
+    {
+      props.items.map((item, index)=><Tab label={item.label} value={props.pathPrefix+"/"+item.label} {...a11yProps(index)} />)
+    }
+  </Tabs>
+))
 
-    newObj.__subfuncs[key] = []
-  }
-  
-  return newObj
-}
-
-const TabsBuild = ({pathPrefix, items}) => {
-  const obj = SubscribeObject({value:0})
-  class TabsBar extends React.Component {
-    constructor(props) {
-      super(props)
-      this.state = {
-        value: 0
+export const StatefulTabsContent = statefulWrapper(withRouter(
+  stylesWrapper(({history, classes, items, pathPrefix}) =>
+    // <SwipeableViews
+    //   axis={'x'}
+    //   index={history.location.pathname}
+    //   // onChangeIndex={handleChangeIndex}
+    //   className={classes.root}
+    //   // style={{minHeight:"100%"}}
+    //   containerStyle={{height:"100%"}}
+    //   // slideStyle={{overflowX:undefined, overflowY:undefined}}
+    //   slideClassName= {classes.slide}
+    // >
+    <div className={classes.root} >
+      {
+        items.map(item=>
+          <TabPanel value={pathPrefix+"/"+item.label} label={item.label} index={history.location.pathname} dir={'ltr'} classes={classes} >
+            {item.component?<item.component />:<div />}
+          </TabPanel>
+        )
       }
-    }
-    componentDidMount() {
-      obj.__subfuncs["value"].push((v)=>this.setState({value:v}))
-    }
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
-      return nextState != null
-    }
-    handleCallToRouter = (e,value) => {
-      this.props.history.push(value);
-    }
-    render() {
-      return (
-        <Tabs
-          value={this.props.history.location.pathname}
-          onChange={this.handleCallToRouter}
-          // value={this.state.value}
-          // onChange={(e,v)=>obj.value=v}
-          indicatorColor="primary"
-          textColor="primary"
-          // variant="fullWidth"
-          aria-label="full width tabs example"
-        >
-          {
-            items.map((item, index)=><Tab label={item.label} value={pathPrefix+"/"+item.label} {...a11yProps(index)} />)
-          }
-        </Tabs>
-      )
-    }
-  }
-
-
-
-  class TabsContent extends React.Component {
-    constructor(props) {
-      super(props)
-      this.state = {
-        value: 0
+    </div>
+    // </SwipeableViews>
+    ,
+    makeStyles((theme) => ({
+      root: {
+        // flexGrow: 1,
+        display: 'block',
+        height: '100%',
+        width: '100%',
+        willChange: 'transform',
+      },
+      slide: {
+        height: '100%',
+        width: '100%'
+      },
+      tabpanel: {
+        height: '100%',
+        width: '100%'
       }
-    }
-    componentDidMount() {
-      obj.__subfuncs["value"].push((v)=>this.setState({value:v}))
-    }
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
-      return nextState != null
-    }
-    render() {
-      const {value} = this.state
-      const theme = {
-        direction: 'ltr'
-      }
-      return (
-        <SwipeableViews
-          axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-          index={this.props.history.location.pathname}
-          // onChangeIndex={handleChangeIndex}
-        >
-          {
-            items.map((item, index)=>
-              <TabPanel value={pathPrefix+"/"+item.label} label={item.label} index={this.props.history.location.pathname} dir={theme.direction} >
-                {item.component}
-              </TabPanel>
-            )
-          }
-        </SwipeableViews>
-      )
-    }
-  }
-  const TabsBarWithRouter = withRouter(TabsBar)
-  const TabsContentWithRouter = withRouter(TabsContent)
-  return {
-    bar:<TabsBarWithRouter />,
-    content:<TabsContentWithRouter />,
-    obj: obj
-  }
-}
-
-export default TabsBuild
+    }))
+  )
+))
 

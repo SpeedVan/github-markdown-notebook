@@ -66,18 +66,87 @@ import MailIcon from '@material-ui/icons/Mail';
 
 import Typography from '@material-ui/core/Typography';
 
-import TabsBuild from './Layout/Header/tabs'
-import DrawerBuild from './Layout/Drawer/drawer'
+import { StatefulTabsBar, StatefulTabsContent } from './Layout/Header/tabs'
+import { StatefulDrawerSider } from './Layout/Drawer/drawer'
 import NotebookSubpage from './subpages/notebook'
 
-const tabs = TabsBuild({
+import {stylesWrapper} from '../../common'
+
+const tabsProps = {
   pathPrefix: '/main',
-  items:[{label:"notebook", component:<NotebookSubpage />},{label:"tools"}]
-});
+  items:[{label:"notebook", component:NotebookSubpage},{label:"tools"}]
+}
 
-const drawer = DrawerBuild("left");
+const MainPage = ({classes})=> {
+  const drawerHook = {}
+  return (
+    <div className={classes.root}>
+      <StatefulDrawerSider archor="left" __hook={drawerHook} />
+      <div className={classes.header}>
+        <AppBar position="static" color="default">
+          <Toolbar>
+            <IconButton
+              edge="start"
+              className={classes.menuButton}
+              color="inherit"
+              aria-label="open drawer"
+              onClick={(e)=>drawerHook.setState({open:true})}
+            >
+              <MenuIcon />
+            </IconButton>
+            
+            <Typography className={classes.title} variant="h6" noWrap>
+              Material-UI
+            </Typography>
+            <div className={classes.search}>
+              <div className={classes.searchIcon}>
+                <SearchIcon />
+              </div>
+              <InputBase
+                placeholder="Search…"
+                classes={{
+                  root: classes.inputRoot,
+                  input: classes.inputInput,
+                }}
+                inputProps={{ 'aria-label': 'search' }}
+              />
+            </div>
 
-const useStyles = makeStyles((theme) => ({
+            <StatefulTabsBar {...tabsProps} />
+
+            <div className={classes.grow} />
+            <div className={classes.sectionDesktop}>
+              <IconButton aria-label="show 4 new mails" color="inherit">
+                <Badge badgeContent={4} color="secondary">
+                  <MailIcon />
+                </Badge>
+              </IconButton>
+              <IconButton aria-label="show 17 new notifications" color="inherit">
+                <Badge badgeContent={17} color="secondary">
+                  <NotificationsIcon />
+                </Badge>
+              </IconButton>
+              <IconButton
+                edge="end"
+                aria-label="account of current user"
+                // aria-controls={menuId}
+                aria-haspopup="true"
+                // onClick={handleProfileMenuOpen}
+                color="inherit"
+              >
+                <AccountCircle />
+              </IconButton>
+            </div>
+          </Toolbar>
+        </AppBar>
+      </div>
+      <div className={classes.content}>
+        <StatefulTabsContent {...tabsProps} />
+      </div>
+    </div>
+  )
+}
+export default stylesWrapper(MainPage, makeStyles((theme) => ({
   root: {
     flexGrow: 1,
     backgroundColor: theme.palette.background.paper,
@@ -145,227 +214,13 @@ const useStyles = makeStyles((theme) => ({
       display: 'none',
     },
   },
-}));
 
-export default function MainLayout() {
-  const classes = useStyles();
-  // const theme = useTheme();
-  // const [value, setValue] = React.useState(0);
-
-
-  // const [anchorEl, setAnchorEl] = React.useState(null);
-  // const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
-
-  // const isMenuOpen = Boolean(anchorEl);
-  // const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-
-  // const handleProfileMenuOpen = (event) => {
-  //   setAnchorEl(event.currentTarget);
-  // };
-
-  // const handleMobileMenuClose = () => {
-  //   setMobileMoreAnchorEl(null);
-  // };
-
-  // const handleMenuClose = () => {
-  //   setAnchorEl(null);
-  //   handleMobileMenuClose();
-  // };
-
-  // const handleMobileMenuOpen = (event) => {
-  //   setMobileMoreAnchorEl(event.currentTarget);
-  // };
-
-  // const menuId = 'primary-search-account-menu';
-  // const renderMenu = (
-  //   <Menu
-  //     anchorEl={anchorEl}
-  //     anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-  //     id={menuId}
-  //     keepMounted
-  //     transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-  //     open={isMenuOpen}
-  //     onClose={handleMenuClose}
-  //   >
-  //     <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-  //     <MenuItem onClick={handleMenuClose}>My account</MenuItem>
-  //   </Menu>
-  // );
-
-  // const mobileMenuId = 'primary-search-account-menu-mobile';
-  // const renderMobileMenu = (
-  //   <Menu
-  //     anchorEl={mobileMoreAnchorEl}
-  //     anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-  //     id={mobileMenuId}
-  //     keepMounted
-  //     transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-  //     open={isMobileMenuOpen}
-  //     onClose={handleMobileMenuClose}
-  //   >
-  //     <MenuItem>
-  //       <IconButton aria-label="show 4 new mails" color="inherit">
-  //         <Badge badgeContent={4} color="secondary">
-  //           <MailIcon />
-  //         </Badge>
-  //       </IconButton>
-  //       <p>Messages</p>
-  //     </MenuItem>
-  //     <MenuItem>
-  //       <IconButton aria-label="show 11 new notifications" color="inherit">
-  //         <Badge badgeContent={11} color="secondary">
-  //           <NotificationsIcon />
-  //         </Badge>
-  //       </IconButton>
-  //       <p>Notifications</p>
-  //     </MenuItem>
-  //     <MenuItem onClick={handleProfileMenuOpen}>
-  //       <IconButton
-  //         aria-label="account of current user"
-  //         aria-controls="primary-search-account-menu"
-  //         aria-haspopup="true"
-  //         color="inherit"
-  //       >
-  //         <AccountCircle />
-  //       </IconButton>
-  //       <p>Profile</p>
-  //     </MenuItem>
-  //   </Menu>
-  // );
-
-  // const handleChange = (event, newValue) => {
-  //   setValue(newValue);
-  // };
-
-  // const handleChangeIndex = (index) => {
-  //   setValue(index);
-  // };
-
-
-  // const [state, setState] = React.useState({
-  //   open: false,
-  // });
-  // const toggleDrawer = (open) => (event) => {
-  //   if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
-  //     return;
-  //   }
-
-  //   setState({ ...state, open: open });
-  // };
-
-  // const list = (anchor) => (
-  //   <div
-  //     className={clsx(classes.list, {
-  //       [classes.fullList]: anchor === 'top' || anchor === 'bottom',
-  //     })}
-  //     role="presentation"
-  //     onClick={toggleDrawer(false)}
-  //     onKeyDown={toggleDrawer(false)}
-  //   >
-  //     <List>
-  //       {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-  //         <ListItem button key={text}>
-  //           <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-  //           <ListItemText primary={text} />
-  //         </ListItem>
-  //       ))}
-  //     </List>
-  //     <Divider />
-  //     <List>
-  //       {['All mail', 'Trash', 'Spam'].map((text, index) => (
-  //         <ListItem button key={text}>
-  //           <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-  //           <ListItemText primary={text} />
-  //         </ListItem>
-  //       ))}
-  //     </List>
-  //   </div>
-  // );
-
-  // const drawer = (anchor) => (
-  //   <React.Fragment key={anchor}>
-  //     <Drawer anchor={anchor} open={state.open} onClose={toggleDrawer(false)}>
-  //       {list(anchor)}
-  //     </Drawer>
-  //   </React.Fragment>
-  // )
-
-  return (
-    <div className={classes.root}>
-      {
-        drawer.sider
-      }
-      
-      <AppBar position="static" color="default">
-        <Toolbar>
-          <IconButton
-            edge="start"
-            className={classes.menuButton}
-            color="inherit"
-            aria-label="open drawer"
-            onClick={(e)=>drawer.obj.open=true}
-          >
-            <MenuIcon />
-          </IconButton>
-          
-          <Typography className={classes.title} variant="h6" noWrap>
-            Material-UI
-          </Typography>
-          <div className={classes.search}>
-            <div className={classes.searchIcon}>
-              <SearchIcon />
-            </div>
-            <InputBase
-              placeholder="Search…"
-              classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput,
-              }}
-              inputProps={{ 'aria-label': 'search' }}
-            />
-          </div>
-
-          {tabs.bar}
-
-          <div className={classes.grow} />
-          <div className={classes.sectionDesktop}>
-            <IconButton aria-label="show 4 new mails" color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <MailIcon />
-              </Badge>
-            </IconButton>
-            <IconButton aria-label="show 17 new notifications" color="inherit">
-              <Badge badgeContent={17} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
-            <IconButton
-              edge="end"
-              aria-label="account of current user"
-              // aria-controls={menuId}
-              aria-haspopup="true"
-              // onClick={handleProfileMenuOpen}
-              color="inherit"
-            >
-              <AccountCircle />
-            </IconButton>
-          </div>
-          {/* <div className={classes.sectionMobile}>
-            <IconButton
-              aria-label="show more"
-              aria-controls={mobileMenuId}
-              aria-haspopup="true"
-              onClick={handleMobileMenuOpen}
-              color="inherit"
-            >
-              <MoreIcon />
-            </IconButton>
-          </div> */}
-        </Toolbar>
-
-       
-      </AppBar>
-      {tabs.content}
-    </div>
-  );
-}
+  header: {
+    height: `${theme.spacing(8)}px`
+  },
+  content: {
+    width: '100vw',
+    height: `calc(100vh - ${theme.spacing(9)}px)`,
+    marginTop: `${theme.spacing(1)}px`
+  }
+})))

@@ -2,21 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import TreeView from '@material-ui/lab/TreeView';
-import TreeViewContext from '@material-ui/lab/TreeView/TreeViewContext';
 import TreeItem from '@material-ui/lab/TreeItem';
 import Typography from '@material-ui/core/Typography';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import {Book as BookIcon, BookOutlined as BookOutlinedIcon} from '@material-ui/icons';
-import { Book as mBookIcon, BookOutline as mBookOutlineIcon, BookPlus as mBookPlusIcon, BookMinus as mBookMinusIcon } from 'mdi-material-ui'
-import DeleteIcon from '@material-ui/icons/Delete';
-import Label from '@material-ui/icons/Label';
-import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
-import InfoIcon from '@material-ui/icons/Info';
-import ForumIcon from '@material-ui/icons/Forum';
-import LocalOfferIcon from '@material-ui/icons/LocalOffer';
+import {  BookOutline as mBookOutlineIcon, BookPlus as mBookPlusIcon, BookMinus as mBookMinusIcon } from 'mdi-material-ui'
 
-import {stylesWrapper, statefulWrapper} from '../../../common'
+import {stylesWrapper} from '../../../common'
 
 
 const useTreeItemStyles = makeStyles((theme) => ({
@@ -129,7 +121,7 @@ class StateItem extends React.Component {
     e.stopPropagation()
     if (!this.state.expanded) {
       if (!this.state.loaded) {
-        fetch("http://106.75.181.203:8081/api/v1/tree/"+this.props.nodeId, { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
+        fetch("http://172.21.31.181:8080/api/v1/tree/"+this.props.nodeId, { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
           .then(res => res.json())
           .then(j => {
             // const state = this.store.getState()
@@ -147,7 +139,7 @@ class StateItem extends React.Component {
   fileOnClick(e) {
     e.preventDefault()
     e.stopPropagation()
-    fetch("http://106.75.181.203:8081/api/v1/raw/"+this.props.nodeId, { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
+    fetch("http://172.21.31.181:8080/api/v1/raw/"+this.props.nodeId, { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
           .then(res => res.text())
           .then(t => {
             // const state = this.store.getState()
@@ -158,7 +150,7 @@ class StateItem extends React.Component {
   }
   render() {
     console.log("StateItem", this.props.nodeId, "render")
-    const exProps = this.props.type == "dir" ? {
+    const exProps = this.props.type === "dir" ? {
       onLabelClick:this.dirOnClick.bind(this),
       labelIcon:this.state.expanded?mBookMinusIcon:mBookPlusIcon
     }: {
@@ -186,7 +178,7 @@ class StatefulTreeView extends React.Component {
     }
   }
   componentDidMount() {
-    fetch("http://106.75.181.203:8081/api/v1/tree/", { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
+    fetch("http://172.21.31.181:8080/api/v1/tree/", { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
       .then(res => res.json())
       .then(j => {
         console.log("查了根一遍")

@@ -1,37 +1,32 @@
 import React from 'react';
 
-const SubscribeObject = (obj) => {
-    const newObj = {
-      __obj: obj,
-      __subfuncs: {}
-    }
-    for (let key in obj) {
-      newObj.__defineGetter__(key, function () {
-        return this.__obj[key]
-      });
-      newObj.__defineSetter__(key, function (x) {
-        this.__obj[key] = x
-        this.__subfuncs.forEach(f => f(this))
-      });
-  
-      newObj.__subfuncs = []
-    }
-  
-    return newObj
+const hookObj = (obj, that) => {
+  obj.__obj = that
+  for (let key in that) {
+    console.log("hookObj typeof(key) key:", typeof obj.__obj[key], key)
+    obj.__defineGetter__(key, function () {
+      if (typeof obj.__obj[key] === "function") {
+        return p => obj.__obj[key](p)
+      }
+    })
   }
+  return obj
+}
 
-export const statefulWrapper = (Com, state) => {
-  console.log("statefulWrapper:", Com)
+export const statefulWrapper = (Com, state={}) => {
   class StatefulWrapper extends React.Component {
-    TCom = Com
+    OrginalCom = Com
+    ss = null
     constructor(props) {
-        super(props)
-        this.state = state
-        console.log("StatefulWrapper", this.TCom)
-        result.ss = function(s) {
-          console.log("ss",this)
-          this.setState(s)
-        }.bind(this)
+      super(props)
+      this.state = state
+      if (props.__hook) {
+        if (props.__hook.__obj) {
+          console.warn("statefulCom __hook is dirty obj")
+          return
+        }
+        hookObj(props.__hook, this)
+      }
     }
     shouldComponentUpdate(nextProps, nextState, nextContext) {
         return nextState != null
@@ -42,12 +37,8 @@ export const statefulWrapper = (Com, state) => {
         return <Com {...this.props} {...this.state} />
     }
   }
-  
-  const result = {
-    Com: StatefulWrapper
-  }
 
-  return result
+  return StatefulWrapper
 }
 
 export const SW = statefulWrapper

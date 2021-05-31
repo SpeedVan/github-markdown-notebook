@@ -2,7 +2,7 @@ import React from 'react';
 import { Switch, Route, HashRouter as Router, Redirect } from 'react-router-dom';
 
 import Welcome from './pages/Welcome'
-import Editor from './pages/Main'
+import Main from './pages/Main'
 
 
 const App: React.FC = () => (
@@ -15,7 +15,7 @@ const App: React.FC = () => (
         <Redirect to="/main/notebook" />
       </Route>
       <Route exact path="/main/*">
-        <Editor />
+        <Main />
       </Route>
     </Switch>
   </Router>
