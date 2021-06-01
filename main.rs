@@ -7,6 +7,9 @@ use openssl::ssl::{SslConnector, SslMethod};
 use serde_json::{json, value::Value::{self, Array, Object}, Map};
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 
+mod actix_in_memory_files;
+use actix_in_memory_files::files;
+
 struct Context {
     http_client: Client,
     private_token: String,
