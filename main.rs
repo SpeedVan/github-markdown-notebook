@@ -173,6 +173,7 @@ async fn main() -> std::io::Result<()> {
             .service(git_tree)
             .service(tree)
             .service(raw)
+            .service(files::InMemFiles::new("/", web_staticpath))
             // .service(fs::Files::new("/", web_staticpath).index_file("index.html"))
             // .route("/index.html", web::get().to(manual_hello))
     })
