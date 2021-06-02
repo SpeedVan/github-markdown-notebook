@@ -1,5 +1,5 @@
 use actix_web::{client::{Client, Connector}, get, web, App, http, HttpResponse, HttpServer, Responder, http::StatusCode};
-use actix_files as fs;
+// use actix_files as fs;
 use actix_cors::Cors;
 use std::{env, sync::Mutex};
 use std::time::Duration;
@@ -173,7 +173,7 @@ async fn main() -> std::io::Result<()> {
             .service(git_tree)
             .service(tree)
             .service(raw)
-            .service(fs::Files::new("/", web_staticpath).index_file("index.html"))
+            // .service(fs::Files::new("/", web_staticpath).index_file("index.html"))
             // .route("/index.html", web::get().to(manual_hello))
     })
     .bind("0.0.0.0:8080")?
