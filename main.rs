@@ -10,6 +10,8 @@ use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 mod actix_in_memory_files;
 use actix_in_memory_files::files;
 
+mod test;
+
 struct Context {
     http_client: Client,
     private_token: String,
@@ -173,7 +175,7 @@ async fn main() -> std::io::Result<()> {
             .service(git_tree)
             .service(tree)
             .service(raw)
-            .service(files::InMemFiles::new("/", web_staticpath))
+            .service(files::InMemFilesServiceFactory::new("/", web_staticpath))
             // .service(fs::Files::new("/", web_staticpath).index_file("index.html"))
             // .route("/index.html", web::get().to(manual_hello))
     })

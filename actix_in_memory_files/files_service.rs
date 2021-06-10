@@ -16,53 +16,13 @@ use actix_service::Service;
 use futures_util::future::{ok, Either, FutureExt, LocalBoxFuture, Ready};
 
 pub struct FilesService {
-    map: HashMap<OsString, Vec<u8>>,
-    directory: PathBuf,
-}
-
-fn fill_file_info(mut map:HashMap<OsString, Vec<u8>>, path:&str) -> HashMap<OsString, Vec<u8>> {
-    if let Ok(entries) = fs::read_dir(path) {
-        for entry in entries {
-            if let Ok(entry) = entry {
-                if let Ok(metadata) = entry.metadata() {
-                    // map.extend_one(entry.path().display())
-                    if metadata.is_file() {
-                        if let Ok(mut f) = fs::File::open(entry.path()) {
-                            let mut buffer = Vec::new();
-                            if let Ok(n) = f.read_to_end(&mut buffer) {
-                                println!("{}", n);
-                                map.insert(entry.path().into_os_string(), buffer);
-                            }
-                        }
-
-                    }
-                    if metadata.is_dir() {
-                        map = fill_file_info(map, entry.path().to_str().unwrap());
-                    }
-                    println!("{:?}: {:?}", entry.path(), metadata.is_dir());
-                } else {
-                    println!("Couldn't get metadata for {:?}", entry.path());
-                }
-            }
-        }
-    }
-    map
+    data: Rc<HashMap<OsString, Vec<u8>>>,
 }
 
 impl FilesService {
-    pub fn new(orig_dir: PathBuf) -> FilesService {
-        let dir = match orig_dir.canonicalize() {
-            Ok(canon_dir) => canon_dir,
-            Err(_) => {
-                PathBuf::new()
-            }
-        };
-        let mut map = HashMap::<OsString, Vec<u8>>::new();
-        map = fill_file_info(map, dir.to_str().unwrap());
-
+    pub fn new(data:Rc<HashMap<OsString, Vec<u8>>>) -> FilesService {
         FilesService {
-            map: map,
-            directory: dir,
+            data: data,
         }
     }
 }
@@ -78,20 +38,20 @@ impl Service for FilesService {
     }
 
     fn call(&mut self, req: ServiceRequest) -> Self::Future {
-        let req_path = req.match_info().path(); // req_path : /index.html
-
+        let req_path:PathBuf = req.match_info().path().into(); // req_path : /index.html
+        let oS = req_path.into_os_string();
         // full file path
-        let path = self.directory.join(req_path.chars().skip(1).collect::<String>());
-        let full_path = path.to_str().unwrap();
-        println!("{}", full_path);
-        let content = match self.map.get(&OsString::from(full_path)) {
+        // let path = self.directory.join(req_path.chars().skip(1).collect::<String>());
+        // let full_path = path.to_str().unwrap();
+        // println!("{}", full_path);
+        let content = match self.data.get(&oS) {
             Some(content) =>content,
             None => return Either::Left(ok(req.into_response(actix_web::HttpResponse::NotFound()))),
         };
 
         let mut resp = actix_web::HttpResponse::with_body(StatusCode::OK, Body::from_slice(content));
 
-        match path.extension() {
+        match req_path.extension() {
             Some(s) => match s.to_str().unwrap() {
                 "svg" => resp.headers_mut().insert(header::CONTENT_TYPE, HeaderValue::from_static("image/svg+xml")),
                 _ => (),
