@@ -7,6 +7,7 @@ COPY ./Cargo.toml /app/github-markdown-notebook/Cargo.toml
 COPY ./Cargo.lock /app/github-markdown-notebook/Cargo.lock
 RUN cargo fetch
 
+COPY ./actix_in_memory_files /app/github-markdown-notebook/actix_in_memory_files
 COPY ./main.rs /app/github-markdown-notebook/main.rs
 RUN cargo build --release
 RUN rm /app/github-markdown-notebook/main.rs

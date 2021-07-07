@@ -1,40 +1,34 @@
-use std::{cell::RefCell, io::prelude::*, fs, path::{Path, PathBuf}, collections::HashMap, ffi::{OsString}, rc::Rc};
+use std::{io::prelude::*, fs, path::{Path, PathBuf}, collections::HashMap, ffi::{OsString}, sync::{Arc}};
 use actix_web::{
     dev::{AppService, HttpServiceFactory, ResourceDef, ServiceRequest, ServiceResponse},
     error::{Error},
 };
-use actix_service::{boxed::{BoxServiceFactory}, ServiceFactory};
+use actix_service::{ServiceFactory};
 use futures_util::future::{ok, FutureExt, LocalBoxFuture};
 
 use crate::actix_in_memory_files::files_service::FilesService;
 
-type HttpNewService = BoxServiceFactory<(), ServiceRequest, ServiceResponse, Error, ()>;
-
-
-
-fn fill_file_info(mut map:HashMap<OsString, Vec<u8>>, mount_path: &str, path:&str) -> HashMap<OsString, Vec<u8>> {
+fn fill_file_info(mount_path: &str, prefix:&str, mut map:HashMap<OsString, Vec<u8>>, path:&str) -> HashMap<OsString, Vec<u8>> {
     if let Ok(entries) = fs::read_dir(path) {
         for entry in entries {
             if let Ok(entry) = entry {
                 if let Ok(metadata) = entry.metadata() {
-                    // map.extend_one(entry.path().display())
                     if metadata.is_file() {
                         if let Ok(mut f) = fs::File::open(entry.path()) {
                             let mut buffer = Vec::new();
-                            if let Ok(n) = f.read_to_end(&mut buffer) {
-                                match entry.path().strip_prefix(path) {
-                                    Ok(p) => Ok(map.insert(p.into(), buffer)),
-                                    Err(e) => Err(e),
-                                };
-                                
+                            if let Ok(_) = f.read_to_end(&mut buffer) {
+                                if let Ok(p) = entry.path().strip_prefix(prefix) {
+                                    // Path::new(String::from("abd"));
+                                    let pa = Path::new(mount_path).join(p);
+                                    println!("{:?}, {:?}, {:?}, {:?}: {:?}", mount_path, p, entry.path(), path, pa);
+                                    map.insert(pa.into(), buffer);
+                                }
                             }
                         }
-
                     }
                     if metadata.is_dir() {
-                        map = fill_file_info(map, mount_path, entry.path().to_str().unwrap());
+                        map = fill_file_info(mount_path, prefix, map, entry.path().to_str().unwrap());
                     }
-                    println!("{:?}: {:?}", entry.path(), metadata.is_dir());
                 } else {
                     println!("Couldn't get metadata for {:?}", entry.path());
                 }
@@ -44,29 +38,44 @@ fn fill_file_info(mut map:HashMap<OsString, Vec<u8>>, mount_path: &str, path:&st
     map
 }
 
-pub struct InMemFilesServiceFactory {
-    path: String,
-    data: Rc<HashMap<OsString, Vec<u8>>>,
+pub struct InMemFilesServiceFactoryBuilder {
+    mount_urlpath: String,
+    data: Arc<HashMap<OsString, Vec<u8>>>,
 }
 
-impl Clone for InMemFilesServiceFactory {
-    fn clone(&self) -> Self {
-        Self {
+impl InMemFilesServiceFactoryBuilder {
 
-            path: self.path.clone(),
-            data: Rc::clone(&self.data),
+    pub fn new<T: Into<PathBuf>>(mount_urlpath: &str, serve_from: T) -> InMemFilesServiceFactoryBuilder {
+        let mut map = HashMap::<OsString, Vec<u8>>::new();
+        let pathbuf = serve_from.into();
+        let path = pathbuf.to_str().unwrap();
+        map = fill_file_info(mount_urlpath, path.clone(), map, path);
+        InMemFilesServiceFactoryBuilder {
+            mount_urlpath: String::from(mount_urlpath),
+            data: Arc::new(map),
         }
+    }
+
+    pub fn build(&self) -> InMemFilesServiceFactory {
+        InMemFilesServiceFactory::new(self.mount_urlpath.clone(), Arc::clone(&self.data))
+    }
+
+    pub fn to_arc(self) -> Arc<InMemFilesServiceFactoryBuilder> {
+        Arc::new(self)
     }
 }
 
-impl InMemFilesServiceFactory {
-    pub fn new<T: Into<PathBuf>>(mount_path: &str, serve_from: T) -> InMemFilesServiceFactory {
-        let mut map = HashMap::<OsString, Vec<u8>>::new();
-        map = fill_file_info(map, mount_path, serve_from.into().to_str().unwrap());
+pub struct InMemFilesServiceFactory {
+    path: String,
+    data: Arc<HashMap<OsString, Vec<u8>>>,
+}
 
+impl InMemFilesServiceFactory {
+
+    pub fn new(mount_path: String, data: Arc<HashMap<OsString, Vec<u8>>>) -> InMemFilesServiceFactory {
         InMemFilesServiceFactory{
-            path: mount_path.to_owned(),
-            data: Rc::new(map),
+            path: mount_path,
+            data: data,
         }
     }
 }
@@ -74,14 +83,12 @@ impl InMemFilesServiceFactory {
 impl HttpServiceFactory for InMemFilesServiceFactory {
     
     fn register(self, config: &mut AppService) {
-
         let rdef = if config.is_root() {
             ResourceDef::root_prefix(&self.path)
         } else {
             ResourceDef::prefix(&self.path)
         };
 
-        
         config.register_service(rdef, None, self, None)
     }
 }
@@ -96,34 +103,19 @@ impl ServiceFactory for InMemFilesServiceFactory {
     type Future = LocalBoxFuture<'static, Result<Self::Service, Self::InitError>>;
 
     fn new_service(&self, _: ()) -> Self::Future {
-        let mut srv = FilesService::new(Rc::clone(&self.data));
-
-        // if let Some(ref default) = *self.default.borrow() {
-        //     default
-        //         .new_service(())
-        //         .map(move |result| match result {
-        //             Ok(default) => {
-        //                 srv.default = Some(default);
-        //                 Ok(srv)
-        //             }
-        //             Err(_) => Err(()),
-        //         })
-        //         .boxed_local()
-        // } else {
-            ok(srv).boxed_local()
-        // }
+        let srv = FilesService::new(Arc::clone(&self.data));
+        ok(srv).boxed_local()
     }
 }
-
-
-
 
 #[cfg(test)]
 mod tests {
     // mod actix_in_memory_files;
-    use crate::actix_in_memory_files::files;
+    use std::path::Path;
     #[test]
     pub fn test_in_memory_files() {
+        let path = Path::new("./abc/bcd/a");
+        println!("{:?}", path.strip_prefix("./abc/"));
         // files::InMemFiles::new("/abc", "./static/");
     }
 }

@@ -121,7 +121,7 @@ class StateItem extends React.Component {
     e.stopPropagation()
     if (!this.state.expanded) {
       if (!this.state.loaded) {
-        fetch("http://172.21.31.181:8080/api/v1/tree/"+this.props.nodeId, { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
+        fetch("/api/v1/tree/"+this.props.nodeId, { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
           .then(res => res.json())
           .then(j => {
             // const state = this.store.getState()
@@ -139,7 +139,7 @@ class StateItem extends React.Component {
   fileOnClick(e) {
     e.preventDefault()
     e.stopPropagation()
-    fetch("http://172.21.31.181:8080/api/v1/raw/"+this.props.nodeId, { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
+    fetch("/api/v1/raw/"+this.props.nodeId, { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
           .then(res => res.text())
           .then(t => {
             // const state = this.store.getState()
@@ -178,7 +178,7 @@ class StatefulTreeView extends React.Component {
     }
   }
   componentDidMount() {
-    fetch("http://172.21.31.181:8080/api/v1/tree/", { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
+    fetch("/api/v1/tree/", { method:"GET", mode:"cors", headers:{"Access-Control-Allow-Origin":"*"} })
       .then(res => res.json())
       .then(j => {
         console.log("查了根一遍")
