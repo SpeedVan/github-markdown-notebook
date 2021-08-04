@@ -1,10 +1,12 @@
-use actix_web::{client::{Client, Connector}, get, web, App, http, HttpResponse, HttpServer, Responder, http::StatusCode};
+// #![feature(unboxed_closures)]
+// #![feature(fn_traits)]
+use actix_web::{client::{Client, Connector}, get, web, App, HttpResponse, HttpServer, Responder, http::StatusCode};
 // use actix_files as fs;
 use actix_cors::Cors;
-use std::{env, sync::Mutex};
+use std::{env, sync::{Arc, Mutex}};
 use std::time::Duration;
 use openssl::ssl::{SslConnector, SslMethod};
-use serde_json::{json, value::Value::{self, Array, Object}, Map};
+use serde_json::{json, value::Value::{self, Array}};
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 
 mod actix_in_memory_files;
@@ -78,35 +80,6 @@ async fn git_tree(path_params: web::Path<String>, data: web::Data<Mutex<Context>
       .header("User-Agent", "request")
       .send()     // <- Send request//   .await;.map_err(|_| ())
       .await;
-    //   .await
-    //   .and_then(|mut response| {
-    //     println!("Response: {:?}", response);
-    //     let json = response.json::<Value>();
-    //     println!("{:?}", json);
-    //     // json.and_then(|v|{});
-    //     // match json {
-    //     //     Ok(v) => match v.as_array() {
-    //     //         Ok(arr) => Ok(arr.iter().map(|v|{ println!("item: {:?}", v) }).collect::<Vec<_>>()),
-    //     //         Err(e) => Err(e),
-    //     //     },
-    //     //     Err(e) => Err(e),
-    //     // }
-    //     // response.json::<Value>().await.unwrap()..and_then(move |bytes| {
-    //     //     let s = std::str::from_utf8(&bytes).expect("utf8 parse error)");
-    //     //     println!("html: {:?}", s);
-
-    //     //     // Ok(())
-    //     //     // Or return something else...
-    //     //     Ok(HttpResponse::Ok()
-    //     //         .content_type("text/html")
-    //     //         .body(format!("{}", s)))
-    //     // }).map_err(|_| ())
-    //     Ok(response)
-    //   });
-    // let result = response
-    //     .unwrap()
-    //     .json::<Value>()
-    //     .await;
 
     let maybe_jsonarr = match response { // 判断是否正常响应，如超时等。
         Ok(mut res) => match res.status() { // 判断statusCode
@@ -122,11 +95,6 @@ async fn git_tree(path_params: web::Path<String>, data: web::Data<Mutex<Context>
         },
         Err(err) => Err(err.to_string()),
     };
-    
-    // // println!("result: {:?}", result);
-    // let json = result.unwrap();
-
-    // let v = json.as_array().unwrap().iter().map(|v|{ println!("item: {:?}", v) }).collect::<Vec<_>>();
 
     HttpResponse::Ok().json(maybe_jsonarr)
 }
@@ -156,24 +124,26 @@ async fn raw(path_params: web::Path<String>, data: web::Data<Mutex<Context>>) ->
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
+    
+    let web_staticpath = env::var("GMN_WEB_STATICPATH").expect("no GMN_WEB_STATICPATH");
+    let files = files::InMemFilesServiceFactoryBuilder::new("/", web_staticpath).to_arc();
+    HttpServer::new(move || {
         let private_token = env::var("GMN_PRIVATETOKEN").expect("no GMN_PRIVATETOKEN");
         let repository = env::var("GMN_REPOSITORY").expect("no GMN_REPOSITORY");
-        let web_staticpath = env::var("GMN_WEB_STATICPATH").expect("no GMN_WEB_STATICPATH");
 
         let builder = SslConnector::builder(SslMethod::tls()).unwrap();
         let client = Client::builder().connector(Connector::new().ssl(builder.build()).finish()).finish();
         let data = web::Data::new(Mutex::new(Context{http_client: client, private_token: private_token, repository: repository}));
 
         let cors = Cors::default().allow_any_origin().allow_any_method().allow_any_header();
-
+        let factory = Arc::clone(&files).build();
         App::new()
             .wrap(cors)
             .app_data(data.clone())
             .service(git_tree)
             .service(tree)
             .service(raw)
-            .service(files::InMemFiles::new("/", web_staticpath))
+            .service(factory)
             // .service(fs::Files::new("/", web_staticpath).index_file("index.html"))
             // .route("/index.html", web::get().to(manual_hello))
     })
